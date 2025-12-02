@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background (transparent or dark to see white elements) -->
+  <rect width="200" height="200" fill="#333"/>
+  
+  <!-- White circle -->
+  <circle cx="100" cy="100" r="80" fill="none" stroke="white" stroke-width="6"/>
+  
+  <!-- White question mark -->
+  <g fill="white">
+    <!-- Top curve and stem of question mark -->
+    <path d="M 70 75 C 70 60, 80 50, 100 50 C 120 50, 130 60, 130 75 C 130 85, 125 92, 115 98 C 108 102, 105 106, 105 115 L 105 125 L 95 125 L 95 115 C 95 102, 100 96, 108 91 C 115 86, 120 82, 120 75 C 120 65, 112 60, 100 60 C 88 60, 80 65, 80 75 L 70 75 Z"/>
+    
+    <!-- Dot of question mark -->
+    <circle cx="100" cy="145" r="7"/>
+  </g>
+</svg>

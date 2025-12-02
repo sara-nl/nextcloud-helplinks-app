@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>helplinks</id>
+    <name>Help Links Manager</name>
+    <summary>Manage hierarchical help links for your Nextcloud instance</summary>
+    <description><![CDATA[Create and manage customizable help sections with main topics and sub-links accessible through the admin settings.]]></description>
+    <version>1.0.0</version>
+    <licence>agpl</licence>
+    <author>Your Name</author>
+    <namespace>HelpLinks</namespace>
+    <category>organization</category>
+    <bugs>https://github.com/yourusername/helplinks/issues</bugs>
+    <dependencies>
+        <nextcloud min-version="25" max-version="29"/>
+    </dependencies>
+    <navigations>
+        <navigation>
+            <name>Help Links</name>
+            <route>helplinks.page.index</route>
+            <icon>app.svg</icon>
+        </navigation>
+    </navigations>
+    <settings>
+        <admin>OCA\HelpLinks\Settings\AdminSettings</admin>
+    </settings>
+</info>

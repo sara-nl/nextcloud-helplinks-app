@@ -196,7 +196,25 @@ export default {
         async loadSections() {
             try {
                 const response = await axios.get(generateUrl('/apps/helplinks/api/sections'))
-                this.sections = response.data.map(item => ({
+                let list = response.data
+
+                // OCS format
+                if (list?.ocs?.data) {
+                    list = list.ocs.data
+                }
+
+                // Wrapped inside object
+                if (list?.sections) {
+                    list = list.sections
+                }
+
+                // Ensure array
+                if (!Array.isArray(list)) {
+                    console.warn('Expected array, got:', list)
+                    list = []
+                }
+
+                this.sections = list.map(item => ({
                     id: item.section.id,
                     title: item.section.title,
                     description: item.section.description,

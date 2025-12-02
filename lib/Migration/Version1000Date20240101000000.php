@@ -65,6 +65,23 @@ class Version1000Date20240101000000 extends SimpleMigrationStep {
             $table->addIndex(['section_id'], 'helplinks_sublinks_section_id');
         }
 
+        if (!$schema->hasTable('helplinks_settings')) {
+            $table = $schema->createTable('helplinks_settings');
+            $table->addColumn('id', 'integer', [
+                'autoincrement' => true,
+                'notnull' => true,
+            ]);
+            $table->addColumn('key', 'string', [
+                'notnull' => true,
+                'length' => 64,
+            ]);
+            $table->addColumn('value', 'text', [
+                'notnull' => false,
+            ]);
+            $table->setPrimaryKey(['id']);
+            $table->addUniqueIndex(['key'], 'helplinks_settings_key');
+        }
+
         return $schema;
     }
 }

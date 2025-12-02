@@ -7,5 +7,6 @@ return [
         ['name' => 'section#update', 'url' => '/api/sections/{id}', 'verb' => 'PUT'],
         ['name' => 'section#destroy', 'url' => '/api/sections/{id}', 'verb' => 'DELETE'],
         ['name' => 'section#reorder', 'url' => '/api/sections/reorder', 'verb' => 'POST'],
+        ['name' => 'section#saveSettings', 'url' => '/api/settings', 'verb' => 'POST'],
     ]
 ];

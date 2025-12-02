@@ -7,18 +7,18 @@
     <description><![CDATA[Create and manage customizable help sections with main topics and sub-links accessible through the admin settings.]]></description>
     <version>1.0.0</version>
     <licence>agpl</licence>
-    <author>Your Name</author>
+    <author>Tom Wezepoel</author>
     <namespace>HelpLinks</namespace>
-    <category>organization</category>
+    <category>SURF</category>
     <bugs>https://github.com/yourusername/helplinks/issues</bugs>
     <dependencies>
-        <nextcloud min-version="25" max-version="29"/>
+        <nextcloud min-version="30" max-version="32"/>
     </dependencies>
     <navigations>
         <navigation>
-            <name>Help Links</name>
+            <name>Help</name>
             <route>helplinks.page.index</route>
-            <icon>app.svg</icon>
+            <icon>help.png</icon>
         </navigation>
     </navigations>
     <settings>

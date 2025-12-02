@@ -72,7 +72,7 @@
                         <ul class="links-list">
                             <!-- Support via e-mail -->
                             <li v-if="supportEmail">
-                                {{ environmentName || t('helplinks', 'Support') }} {{ t('helplinks', 'via') }}
+                                {{ t('helplinks', 'Request support via') }}
                                 <a :href="`mailto:${supportEmail}`">
                                     <u>{{ t('helplinks', 'your IT-Servicedesk') }}</u> ↗
                                 </a>
@@ -80,7 +80,7 @@
 
                             <!-- Support via URL -->
                             <li v-if="supportUrl">
-                                {{ environmentName || t('helplinks', 'Support') }} {{ t('helplinks', 'via') }}
+                                {{ t('helplinks', 'Request support via') }}
                                 <a :href="supportUrl" target="_blank" rel="noopener">
                                     <u>{{ t('helplinks', 'your IT-Servicedesk') }}</u> ↗
                                 </a>

@@ -18,7 +18,7 @@ class PageController extends Controller {
      */
     public function index(): TemplateResponse {
         Util::addScript(Application::APP_ID, 'helplinks-main');
-        Util::addStyle(Application::APP_ID, 'style');
+        Util::addStyle(Application::APP_ID, 'helplinks-main');
         
         return new TemplateResponse(Application::APP_ID, 'main');
     }

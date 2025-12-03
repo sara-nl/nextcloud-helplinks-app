@@ -21,19 +21,3 @@ RUN php composer-setup.php --version=2.9.0 --install-dir=/usr/local/bin --filena
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get install -y -qq nodejs
 #RUN npm install && npm run build
-
-####
-# How to build a new release.
-#  1. make a build container
-#  docker build -t nextcloud-app-builder .
-#
-#  2. Build the app 
-#  docker run -it -v "$PWD:/app" nextcloud-app-builder /bin/bash
-#     root@53dad0ccc8a3:/app# composer install --no-interaction --no-progress --optimize-autoloader
-#     root@53dad0ccc8a3:/app# composer update
-#     root@53dad0ccc8a3:/app# npm install && npm run build
-#     root@53dad0ccc8a3:/app# export RELEASE_VERSION=v1.4.0
-#     root@53dad0ccc8a3:/app# version=$RELEASE_VERSION make -e appstore
-#
-#  3. Create a new release in github and add you tar.gz as attachment
- 

@@ -44,7 +44,7 @@ class SectionService {
         $section = $this->sectionMapper->insert($section);
 
         $subLinks = [];
-        if (isset($data['subLinks']) && is_array($data['subLinks'])) {
+        if (!empty($data['subLinks']) && is_array($data['subLinks'])) {
             foreach ($data['subLinks'] as $index => $subLinkData) {
                 $subLink = new SubLink();
                 $subLink->setSectionId($section->getId());
@@ -76,7 +76,7 @@ class SectionService {
             $this->subLinkMapper->deleteBySection($id);
 
             $subLinks = [];
-            if (isset($data['subLinks']) && is_array($data['subLinks'])) {
+            if (!empty($data['subLinks']) && is_array($data['subLinks'])) {
                 foreach ($data['subLinks'] as $index => $subLinkData) {
                     $subLink = new SubLink();
                     $subLink->setSectionId($id);

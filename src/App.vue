@@ -1,5 +1,5 @@
 <template>
-    <NcContent app-name="helplinks">
+    <NcContent :app-name="appName">
         <NcAppContent>
             <div class="helplinks-content">
                 <h2>{{ t('helplinks', 'Help & Documentation') }}</h2>
@@ -112,6 +112,7 @@ export default {
     },
     data() {
         return {
+			appName: appName,
             sections: [],
             introvoxEnabled: false,
             supportEmail: '',
@@ -147,11 +148,7 @@ export default {
 }
 </script>
 
-<style scoped>
-.content.app-helplinks {
-  margin: 0px !important;
-}
-
+<style lang="scss" scoped>
 .helplinks-content {
     padding: 20px;
     max-width: 900px;

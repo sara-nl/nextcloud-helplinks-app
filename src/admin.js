@@ -1,13 +1,7 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import AdminApp from './AdminApp.vue'
-import { generateFilePath } from '@nextcloud/router'
+import { t, n } from '@nextcloud/l10n'
 
-// eslint-disable-next-line
-__webpack_public_path__ = generateFilePath('helplinks', '', 'js/')
-
-Vue.mixin({ methods: { t, n } })
-
-export default new Vue({
-    el: '#helplinks-admin-app',
-    render: h => h(AdminApp),
-})
+const adminApp = createApp(AdminApp)
+adminApp.mixin({ methods: { t, n }})
+adminApp.mount('#helplinks-admin-app')

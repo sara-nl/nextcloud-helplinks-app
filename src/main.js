@@ -1,13 +1,7 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
-import { generateFilePath } from '@nextcloud/router'
+import { t, n } from '@nextcloud/l10n'
 
-// eslint-disable-next-line
-__webpack_public_path__ = generateFilePath('helplinks', '', 'js/')
-
-Vue.mixin({ methods: { t, n } })
-
-export default new Vue({
-    el: '#app-helplinks',
-    render: h => h(App),
-})
+const app = createApp(App)
+app.mixin({ methods: { t, n }})
+app.mount('#content')

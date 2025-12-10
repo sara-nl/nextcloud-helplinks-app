@@ -33,7 +33,7 @@ RUN apt-get install -y -qq nodejs
 #     root@53dad0ccc8a3:/app# composer update
 #     root@53dad0ccc8a3:/app# npm install && npm run build
 #     root@53dad0ccc8a3:/app# export RELEASE_VERSION=v1.4.0
-#     root@53dad0ccc8a3:/app# version=$RELEASE_VERSION make -e appstore
+#     root@53dad0ccc8a3:/app# version=$RELEASE_VERSION make -e buildapp
 #
 #  3. Create a new release in github and add you tar.gz as attachment
  

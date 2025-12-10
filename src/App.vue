@@ -1,6 +1,6 @@
 <template>
     <NcContent :app-name="appName">
-        <!-- <NcAppContent> -->
+        <NcAppContent>
             <div class="helplinks-content">
                 <h2>{{ t('helplinks', 'Help & Documentation') }}</h2>
                 
@@ -90,7 +90,7 @@
 
                 </div>
             </div>
-        <!-- </NcAppContent> -->
+        </NcAppContent>
     </NcContent>
 </template>
 

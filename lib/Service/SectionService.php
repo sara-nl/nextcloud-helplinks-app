@@ -20,7 +20,7 @@ class SectionService {
     public function findAll(): array {
         $sections = $this->sectionMapper->findAll();
         $result = [];
-        
+
         foreach ($sections as $section) {
             $subLinks = $this->subLinkMapper->findBySection($section->getId());
             $result[] = [
@@ -28,7 +28,7 @@ class SectionService {
                 'subLinks' => $subLinks,
             ];
         }
-        
+
         return $result;
     }
 
@@ -40,11 +40,11 @@ class SectionService {
         $section->setMainLinkUrl($data['mainLinkUrl'] ?? '');
         $section->setSortOrder($data['sortOrder'] ?? 0);
         $section->setCreatedAt(time());
-        
+
         $section = $this->sectionMapper->insert($section);
-        
+
         $subLinks = [];
-        if (isset($data['subLinks']) && is_array($data['subLinks'])) {
+        if (!empty($data['subLinks']) && is_array($data['subLinks'])) {
             foreach ($data['subLinks'] as $index => $subLinkData) {
                 $subLink = new SubLink();
                 $subLink->setSectionId($section->getId());
@@ -54,7 +54,7 @@ class SectionService {
                 $subLinks[] = $this->subLinkMapper->insert($subLink);
             }
         }
-        
+
         return [
             'section' => $section,
             'subLinks' => $subLinks,
@@ -64,20 +64,19 @@ class SectionService {
     public function update(int $id, array $data): array {
         try {
             $section = $this->sectionMapper->find($id);
-            
+
             $section->setTitle($data['title'] ?? $section->getTitle());
             $section->setDescription($data['description'] ?? $section->getDescription());
             $section->setMainLinkText($data['mainLinkText'] ?? $section->getMainLinkText());
             $section->setMainLinkUrl($data['mainLinkUrl'] ?? $section->getMainLinkUrl());
-            
+
             $section = $this->sectionMapper->update($section);
-            
-            // Delete existing sublinks
+
+            // Replace sublinks
             $this->subLinkMapper->deleteBySection($id);
-            
-            // Insert new sublinks
+
             $subLinks = [];
-            if (isset($data['subLinks']) && is_array($data['subLinks'])) {
+            if (!empty($data['subLinks']) && is_array($data['subLinks'])) {
                 foreach ($data['subLinks'] as $index => $subLinkData) {
                     $subLink = new SubLink();
                     $subLink->setSectionId($id);
@@ -87,11 +86,12 @@ class SectionService {
                     $subLinks[] = $this->subLinkMapper->insert($subLink);
                 }
             }
-            
+
             return [
                 'section' => $section,
                 'subLinks' => $subLinks,
             ];
+
         } catch (DoesNotExistException $e) {
             throw new Exception('Section not found');
         }

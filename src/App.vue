@@ -72,7 +72,7 @@
                         <ul class="links-list">
                             <!-- Support via e-mail -->
                             <li v-if="supportEmail">
-                                {{ t('helplinks', 'Request support via') }}
+                                {{ t('helplinks', 'Request support by email request from') }}
                                 <a :href="`mailto:${supportEmail}`">
                                     <u>{{ t('helplinks', 'your IT-Servicedesk') }}</u> ↗
                                 </a>
@@ -80,7 +80,7 @@
 
                             <!-- Support via URL -->
                             <li v-if="supportUrl">
-                                {{ t('helplinks', 'Request support via') }}
+                                {{ t('helplinks', 'Request support by service request from') }}
                                 <a :href="supportUrl" target="_blank" rel="noopener">
                                     <u>{{ t('helplinks', 'your IT-Servicedesk') }}</u> ↗
                                 </a>

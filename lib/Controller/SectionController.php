@@ -28,10 +28,10 @@ class SectionController extends Controller {
         $sections = $this->service->findAll();
         $settings = $this->settingsService->getAll();
         
-        // Add Introvox enabled status
         return new DataResponse([
             'sections' => $sections,
             'introvoxEnabled' => $this->appManager->isEnabledForUser('introvox'),
+            'talkEnabled' => $this->appManager->isEnabledForUser('spreed'),
             'supportEmail' => $settings['supportEmail'],
             'supportUrl' => $settings['supportUrl'],
             'environmentName' => $settings['environmentName'],

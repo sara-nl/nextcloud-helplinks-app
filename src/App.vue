@@ -20,7 +20,7 @@
                 <div v-else class="sections-container">
                     <!-- Introvox Interactive Tutorial Section -->
                     <div v-if="introvoxEnabled" class="help-section introvox-section">
-                        <h3>{{ t('helplinks', 'Introvox Interactive Tutorial') }}</h3>
+                        <h3>{{ t('helplinks', 'Interactive Tutorial by Introvox') }}</h3>
                         <p class="section-description">
                             {{ t('helplinks', 'IntroVox offers a user-friendly interactive onboarding tour that helps you get started quickly and easily find your way around the environment. You can find the IntroVox interactive onboarding tour in your personal settings.') }}
                         </p>
@@ -62,6 +62,85 @@
                         </ul>
                     </div>
 
+                    <!-- Nextcloud Talk Desktop Client Section -->
+                    <div v-if="talkEnabled" class="help-section nextcloud-section">
+                        <h3>{{ t('helplinks', 'Talk Desktop Client') }}</h3>
+                        <p class="section-description">
+                            {{ t('helplinks', 'Download and install the Nextcloud Talk desktop client to use video calls, chat, and screen sharing directly from your desktop.') }}
+                        </p>
+                        <p class="section-description">
+                            <strong>{{ t('helplinks', 'Configuration:') }}</strong><br>
+                            {{ t('helplinks', 'When setting up the client, use the following server URL:') }}
+                        </p>
+                        <p class="environment-url">
+                            {{ environmentUrl }}
+                        </p>
+                        <NcButton
+                            type="secondary"
+                            :href="talkDownloadUrl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="talk-download-button"
+                        >
+                            <template #icon>
+                                <Download :size="20" />
+                            </template>
+                            {{ t('helplinks', 'Download Talk Desktop Client') }}
+                        </NcButton>
+                    </div>
+
+                    <!-- Nextcloud Files Desktop Client Section -->
+                    <div class="help-section nextcloud-section">
+                        <h3>{{ t('helplinks', 'Files Desktop Client') }}</h3>
+                        <p class="section-description">
+                            {{ t('helplinks', 'Download and install the Nextcloud Files desktop client to keep your files synchronized between the server and your desktop.') }}
+                        </p>
+                        <p class="section-description">
+                            <strong>{{ t('helplinks', 'Configuration:') }}</strong><br>
+                            {{ t('helplinks', 'When setting up the client, use the following server URL:') }}
+                        </p>
+                        <p class="environment-url">
+                            {{ environmentUrl }}
+                        </p>
+                        <NcButton
+                            type="secondary"
+                            :href="filesDownloadUrl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="files-download-button"
+                        >
+                            <template #icon>
+                                <Download :size="20" />
+                            </template>
+                            {{ t('helplinks', 'Download Nextcloud Desktop Client') }}
+                        </NcButton>
+                    </div>
+
+                    <!-- WebDAV Section -->
+                    <div class="help-section webdav-section">
+                        <h3>{{ t('helplinks', 'WebDAV File Access') }}</h3>
+                        <p class="section-description">
+                            {{ t('helplinks', 'You can access your files using any WebDAV client. This allows you to mount your cloud storage as a network drive on your computer or access it through compatible applications.') }}
+                        </p>
+                        <p class="section-description">
+                            <strong>{{ t('helplinks', 'Setup Instructions:') }}</strong>
+                        </p>
+                        <ol class="setup-steps">
+                            <li>{{ t('helplinks', 'Create WebDAV credentials in your personal settings') }}</li>
+                            <li>{{ t('helplinks', 'Use these credentials to connect your WebDAV client') }}</li>
+                        </ol>
+                        <NcButton
+                            type="secondary"
+                            @click="openWebdavSettings"
+                            class="webdav-settings-button"
+                        >
+                            <template #icon>
+                                <Key :size="20" />
+                            </template>
+                            {{ t('helplinks', 'Create WebDAV Credentials') }}
+                        </NcButton>
+                    </div>
+
                     <!-- IT Support Section -->
                     <div v-if="supportEmail || supportUrl" class="help-section support-section">
                         <h3>{{ t('helplinks', 'Support') }}</h3>
@@ -100,6 +179,8 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { showError } from '@nextcloud/dialogs'
 import HelpCircle from 'vue-material-design-icons/HelpCircle.vue'
+import Download from 'vue-material-design-icons/Download.vue'
+import Key from 'vue-material-design-icons/Key.vue'
 
 export default {
     name: 'App',
@@ -109,15 +190,21 @@ export default {
         NcEmptyContent,
         NcButton,
         HelpCircle,
+        Download,
+        Key,
     },
     data() {
         return {
 			appName: appName,
             sections: [],
             introvoxEnabled: false,
+            talkEnabled: false,
             supportEmail: '',
             supportUrl: '',
             environmentName: '',
+            environmentUrl: '',
+            talkDownloadUrl: 'https://nextcloud.com/install/#desktop-talk',
+            filesDownloadUrl: 'https://nextcloud.com/install/#desktop-files',
             loading: true,
         }
     },
@@ -130,9 +217,11 @@ export default {
                 const response = await axios.get(generateUrl('/apps/helplinks/api/sections'))
                 this.sections = response.data.sections || []
                 this.introvoxEnabled = response.data.introvoxEnabled || false
+                this.talkEnabled = response.data.talkEnabled || false
                 this.supportEmail = response.data.supportEmail || ''
                 this.supportUrl = response.data.supportUrl || ''
                 this.environmentName = response.data.environmentName || ''
+                this.environmentUrl = response.data.environmentUrl || window.location.origin
             } catch (error) {
                 console.error('Error loading sections:', error)
                 showError(t('helplinks', 'Failed to load help sections'))
@@ -144,6 +233,10 @@ export default {
             const url = generateUrl('/settings/user/introvox-help')
             window.location.href = url
         },
+        openWebdavSettings() {
+            const url = generateUrl('/settings/user/security')
+            window.location.href = url
+        },
     },
 }
 </script>
@@ -151,12 +244,22 @@ export default {
 <style lang="scss" scoped>
 .helplinks-content {
     padding: 20px;
-    max-width: 900px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
 .sections-container {
     margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+/* 2 columns on wide screens (tablets and up) */
+@media (min-width: 768px) {
+    .sections-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .help-section {
@@ -164,7 +267,7 @@ export default {
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-large);
     padding: 20px;
-    margin-bottom: 20px;
+    height: fit-content;
 }
 
 .support-section {
@@ -184,6 +287,37 @@ export default {
 .introvox-section {
     background: var(--color-primary-element-light);
     border-color: var(--color-primary-element);
+}
+
+.nextcloud-section,
+.webdav-section {
+    background: var(--color-success-light);
+    border-color: var(--color-success);
+}
+
+.environment-url {
+    background: var(--color-background-dark);
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    font-family: monospace;
+    font-size: 14px;
+    margin: 10px 0;
+    word-break: break-all;
+}
+
+.talk-download-button,
+.files-download-button,
+.webdav-settings-button {
+    margin-top: 10px;
+}
+
+.setup-steps {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.setup-steps li {
+    margin-bottom: 8px;
 }
 
 .help-section h3 {

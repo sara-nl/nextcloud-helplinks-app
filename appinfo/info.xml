@@ -5,7 +5,7 @@
     <name>Help Links Manager</name>
     <summary>Manage hierarchical help links for your Nextcloud instance</summary>
     <description><![CDATA[Create and manage customizable help sections with main topics and sub-links accessible through the admin settings.]]></description>
-    <version>1.0.0</version>
+    <version>1.0.3</version>
     <licence>agpl</licence>
     <author>Tom Wezepoel</author>
     <namespace>HelpLinks</namespace>

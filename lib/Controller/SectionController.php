@@ -90,8 +90,9 @@ class SectionController extends Controller {
     /**
      * @AdminRequired
      */
-    public function saveSettings(string $supportEmail, string $environmentName): DataResponse {
+    public function saveSettings(string $supportEmail, string $supportUrl, string $environmentName): DataResponse {
         $this->settingsService->setSupportEmail($supportEmail);
+        $this->settingsService->setSupportUrl($supportUrl);
         $this->settingsService->setEnvironmentName($environmentName);
         
         return new DataResponse([

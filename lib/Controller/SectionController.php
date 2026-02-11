@@ -6,6 +6,7 @@ use OCA\HelpLinks\Service\SectionService;
 use OCA\HelpLinks\Service\SettingsService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IUserSession;
 use OCP\IRequest;
 use OCP\App\IAppManager;
 
@@ -13,12 +14,20 @@ class SectionController extends Controller {
     private $service;
     private $appManager;
     private $settingsService;
+    private $userSession;
 
-    public function __construct(IRequest $request, SectionService $service, IAppManager $appManager, SettingsService $settingsService) {
+    public function __construct(
+        IRequest $request,
+        SectionService $service,
+        IAppManager $appManager,
+        SettingsService $settingsService,
+        IUserSession $userSession,
+    ) {
         parent::__construct(Application::APP_ID, $request);
         $this->service = $service;
         $this->appManager = $appManager;
         $this->settingsService = $settingsService;
+        $this->userSession = $userSession;
     }
 
     /**
@@ -28,6 +37,10 @@ class SectionController extends Controller {
         $sections = $this->service->findAll();
         $settings = $this->settingsService->getAll();
         
+        // Get user's Federeated OCM Cloud ID
+        $user = $this->userSession->getUser();
+        $cloudId = $user ? $user->getCloudId() : '';
+
         return new DataResponse([
             'sections' => $sections,
             'introvoxEnabled' => $this->appManager->isEnabledForUser('introvox'),
@@ -35,6 +48,7 @@ class SectionController extends Controller {
             'supportEmail' => $settings['supportEmail'],
             'supportUrl' => $settings['supportUrl'],
             'environmentName' => $settings['environmentName'],
+            'cloudId' => $cloudId,
         ]);
     }
 

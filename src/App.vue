@@ -148,10 +148,7 @@
                                 <div v-show="addressBookTipExpanded" class="address-book-tip">
                                     <p>
                                         {{ t('helplinks', 'Save frequently used Federated Cloud IDs to your personal address book for quick access.') }}
-                                        {{ t('helplinks', 'Next time you share a file or folder, simply start typing the contact\'s name and their Federated Cloud ID will appear in the autocomplete suggestion.') }}
-                                    </p>
-                                    <p>
-                                    <strong>{{ t('helplinks', 'This making cross-instance sharing effortless!') }}</strong>
+                                        {{ t('helplinks', 'Next time you share a file or folder, simply start typing the contact\'s name and their Federated Cloud ID will appear in the autocomplete suggestions, making cross-instance sharing effortless!') }}
                                     </p>
                                     <div class="tip-steps">
                                         <strong>{{ t('helplinks', 'How to add a federated contact:') }}</strong>
@@ -240,6 +237,7 @@ import { NcContent, NcAppContent, NcEmptyContent, NcButton } from '@nextcloud/vu
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { showError } from '@nextcloud/dialogs'
+import { t } from '@nextcloud/l10n'
 import HelpCircle from 'vue-material-design-icons/HelpCircle.vue'
 import Download from 'vue-material-design-icons/Download.vue'
 import Key from 'vue-material-design-icons/Key.vue'

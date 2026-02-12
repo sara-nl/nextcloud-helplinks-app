@@ -11,7 +11,7 @@
                 />
                 
                 <NcEmptyContent
-                    v-else-if="sections.length === 0 && !introvoxEnabled && !supportEmail && !supportUrl"
+                    v-else-if="sections.length === 0 && !introvoxEnabled && !supportEmail && !supportUrl && !cloudId"
                     :name="t('helplinks', 'No help sections available')"
                     :description="t('helplinks', 'Contact your administrator to configure help links.')"
                     icon="icon-info"
@@ -85,7 +85,7 @@
                             <template #icon>
                                 <Download :size="20" />
                             </template>
-                            {{ t('helplinks', 'Download Talk Desktop Client') }}
+                            {{ t('helplinks', 'Download Nextcloud Talk Client') }}
                         </NcButton>
                     </div>
 
@@ -112,8 +112,67 @@
                             <template #icon>
                                 <Download :size="20" />
                             </template>
-                            {{ t('helplinks', 'Download Nextcloud Desktop Client') }}
+                            {{ t('helplinks', 'Download Nextcloud Files Client') }}
                         </NcButton>
+                    </div>
+
+                    <!-- Federated Cloud ID Section -->
+                    <div v-if="cloudId" class="help-section cloud-id-section">
+                        <h3>{{ t('helplinks', 'Your Federated Cloud ID') }}</h3>
+                        <p class="section-description">
+                            {{ t('helplinks', 'Share your Federated Cloud ID with users on other Nextcloud servers to collaborate on files and folders.') }}
+                            {{ t('helplinks', 'Others can share files with you by entering your Federated Cloud ID.') }}
+                        </p>
+
+                        <p class="environment-url">
+                            {{ cloudId }}
+                        </p>
+                            
+                        <!-- Expandable Address Book Tip -->
+                        <div class="address-book-expandable">
+                            <button 
+                                class="expand-button"
+                                @click="addressBookTipExpanded = !addressBookTipExpanded"
+                                :aria-expanded="addressBookTipExpanded.toString()"
+                            >
+                                <BookAccount :size="20" class="tip-icon" />
+                                <span class="expand-title">{{ t('helplinks', 'Pro Tip: Save to Address Book for Easy Sharing') }}</span>
+                                <ChevronDown 
+                                    :size="20" 
+                                    class="chevron-icon"
+                                    :class="{ 'rotated': addressBookTipExpanded }"
+                                />
+                            </button>
+                            
+                            <transition name="expand">
+                                <div v-show="addressBookTipExpanded" class="address-book-tip">
+                                    <p>
+                                        {{ t('helplinks', 'Save frequently used Federated Cloud IDs to your personal address book for quick access.') }}
+                                        {{ t('helplinks', 'Next time you share a file or folder, simply start typing the contact\'s name and their Federated Cloud ID will appear in the autocomplete suggestions, making cross-instance sharing effortless!') }}
+                                    </p>
+                                    <div class="tip-steps">
+                                        <strong>{{ t('helplinks', 'How to add a federated contact:') }}</strong>
+                                        <ol>
+                                            <li>{{ t('helplinks', 'Open the Contacts app from the app menu') }}</li>
+                                            <li>{{ t('helplinks', 'Click the "+ New contact" button') }}</li>
+                                            <li>{{ t('helplinks', 'Enter the contact name and their Federated Cloud ID') }}</li>
+                                            <li>{{ t('helplinks', 'Add optional details like organization or notes') }}</li>
+                                            <li>{{ t('helplinks', 'Save the contact') }}</li>
+                                        </ol>
+                                    </div>
+                                    <NcButton
+                                        type="secondary"
+                                        @click="openContactsApp"
+                                        class="contacts-button"
+                                    >
+                                        <template #icon>
+                                            <BookAccount :size="20" />
+                                        </template>
+                                        {{ t('helplinks', 'Open Contacts App') }}
+                                    </NcButton>
+                                </div>
+                            </transition>
+                        </div>
                     </div>
 
                     <!-- WebDAV Section -->
@@ -178,9 +237,14 @@ import { NcContent, NcAppContent, NcEmptyContent, NcButton } from '@nextcloud/vu
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { showError } from '@nextcloud/dialogs'
+import { t } from '@nextcloud/l10n'
 import HelpCircle from 'vue-material-design-icons/HelpCircle.vue'
 import Download from 'vue-material-design-icons/Download.vue'
 import Key from 'vue-material-design-icons/Key.vue'
+import ContentCopy from 'vue-material-design-icons/ContentCopy.vue'
+import InformationOutline from 'vue-material-design-icons/InformationOutline.vue'
+import BookAccount from 'vue-material-design-icons/BookAccount.vue'
+import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 
 export default {
     name: 'App',
@@ -192,6 +256,10 @@ export default {
         HelpCircle,
         Download,
         Key,
+        ContentCopy,
+        InformationOutline,
+        BookAccount,
+        ChevronDown,
     },
     data() {
         return {
@@ -203,6 +271,8 @@ export default {
             supportUrl: '',
             environmentName: '',
             environmentUrl: '',
+            cloudId: '',
+            addressBookTipExpanded: false,
             talkDownloadUrl: 'https://nextcloud.com/install/#desktop-talk',
             filesDownloadUrl: 'https://nextcloud.com/install/#desktop-files',
             loading: true,
@@ -216,23 +286,43 @@ export default {
             try {
                 const response = await axios.get(generateUrl('/apps/helplinks/api/sections'))
                 this.sections = response.data.sections || []
+                
                 this.introvoxEnabled = response.data.introvoxEnabled || false
                 this.talkEnabled = response.data.talkEnabled || false
                 this.supportEmail = response.data.supportEmail || ''
                 this.supportUrl = response.data.supportUrl || ''
                 this.environmentName = response.data.environmentName || ''
                 this.environmentUrl = response.data.environmentUrl || window.location.origin
+                this.cloudId = response.data.cloudId || ''
             } catch (error) {
                 console.error('Error loading sections:', error)
                 showError(t('helplinks', 'Failed to load help sections'))
+                this.sections = [] // Ensure it's an empty array on error
             } finally {
                 this.loading = false
             }
         },
+
+        async copyCloudId() {
+            try {
+                await navigator.clipboard.writeText(this.cloudId)
+                showSuccess(t('helplinks', 'Federated Cloud ID copied to clipboard'))
+            } catch (error) {
+                console.error('Error copying to clipboard:', error)
+                showError(t('helplinks', 'Failed to copy to clipboard'))
+            }
+        },
+
         openIntrovoxHelp() {
             const url = generateUrl('/settings/user/introvox-help')
             window.location.href = url
         },
+
+        openContactsApp() {
+            const url = generateUrl('/apps/contacts')
+            window.location.href = url
+        },
+
         openWebdavSettings() {
             const url = generateUrl('/settings/user/security')
             window.location.href = url
@@ -284,6 +374,142 @@ export default {
     font-weight: 600;
 }
 
+.cloud-id-section {
+    background: var(--color-success-light);
+    border-color: var(--color-success);
+}
+
+.cloud-id-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 12px;
+    background: var(--color-main-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+}
+
+.cloud-id-value {
+    flex: 1;
+    font-family: monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-primary-element);
+    padding: 8px 12px;
+    background: var(--color-background-dark);
+    border-radius: var(--border-radius);
+}
+
+/* Address book */
+.address-book-expandable {
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.expand-button {
+    margin: 0px !important;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--color-primary-element-light) 0%, var(--color-background-hover) 100%);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.expand-button:hover {
+    background: var(--color-primary-element-light);
+}
+
+.expand-button:focus {
+    outline: 2px solid var(--color-primary-element);
+    outline-offset: -2px;
+}
+
+.expand-title {
+    flex: 1;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-primary-element);
+}
+
+.tip-icon,
+.chevron-icon {
+    color: var(--color-primary-element);
+    flex-shrink: 0;
+}
+
+.chevron-icon {
+    transition: transform 0.3s ease;
+}
+
+.chevron-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.address-book-tip {
+    background: linear-gradient(135deg, var(--color-primary-element-light) 0%, var(--color-background-hover) 100%);
+    /*border: 2px solid var(--color-primary-element);*/
+    border-radius: var(--border-radius-large);
+    padding: 20px;
+    /*margin: 20px 0;*/
+}
+
+.address-book-tip > p {
+    margin: 0 0 15px;
+    line-height: 1.6;
+    color: var(--color-main-text);
+}
+
+.tip-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.tip-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-primary-element);
+}
+
+.tip-steps {
+    background: var(--color-main-background);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.tip-steps strong {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--color-main-text);
+    font-size: 14px;
+}
+
+.tip-steps ol {
+    list-style: decimal;
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.tip-steps ol li {
+    margin: 6px 0;
+    line-height: 1.5;
+    color: var(--color-text-lighter);
+}
+
+.contacts-button {
+    margin-top: 15px;
+}
+
+/* Introvox */
 .introvox-section {
     background: var(--color-primary-element-light);
     border-color: var(--color-primary-element);

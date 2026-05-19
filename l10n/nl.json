@@ -76,7 +76,7 @@
         "e.g., servicedesk@example.com": "bijv., servicedesk@voorbeeld.nl",
         "Save Support Settings": "Ondersteuning Instellingen Opslaan",
         "Support settings saved": "Ondersteuning instellingen opgeslagen",
-        "Failed to save support settings": "Kon ondersteuning instellingen niet opslaan",
+        "Failed to save support settings": "Kon ondersteuning instellingen niet opslaan"
     },
     "pluralForm": "nplurals=2; plural=(n != 1);"
 }

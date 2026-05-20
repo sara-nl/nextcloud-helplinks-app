@@ -5,6 +5,7 @@ use OCA\HelpLinks\AppInfo\Application;
 use OCA\HelpLinks\Service\SectionService;
 use OCA\HelpLinks\Service\SettingsService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IUserSession;
 use OCP\IRequest;
@@ -30,9 +31,7 @@ class SectionController extends Controller {
         $this->userSession = $userSession;
     }
 
-    /**
-     * @NoAdminRequired
-     */
+    #[NoAdminRequired]
     public function index(): DataResponse {
         $sections = $this->service->findAll();
         $settings = $this->settingsService->getAll();
@@ -52,10 +51,7 @@ class SectionController extends Controller {
         ]);
     }
 
-    /**
-     * @AdminRequired
-     */
-    public function create(string $title, string $description, string $mainLinkText, 
+    public function create(string $title, string $description, string $mainLinkText,
                           string $mainLinkUrl, array $subLinks, int $sortOrder): DataResponse {
         $data = [
             'title' => $title,
@@ -69,10 +65,7 @@ class SectionController extends Controller {
         return new DataResponse($this->service->create($data));
     }
 
-    /**
-     * @AdminRequired
-     */
-    public function update(int $id, string $title, string $description, 
+    public function update(int $id, string $title, string $description,
                           string $mainLinkText, string $mainLinkUrl, array $subLinks): DataResponse {
         $data = [
             'title' => $title,
@@ -85,25 +78,16 @@ class SectionController extends Controller {
         return new DataResponse($this->service->update($id, $data));
     }
 
-    /**
-     * @AdminRequired
-     */
     public function destroy(int $id): DataResponse {
         $this->service->delete($id);
         return new DataResponse(['success' => true]);
     }
 
-    /**
-     * @AdminRequired
-     */
     public function reorder(array $order): DataResponse {
         $this->service->reorder($order);
         return new DataResponse(['success' => true]);
     }
 
-    /**
-     * @AdminRequired
-     */
     public function saveSettings(string $supportEmail, string $supportUrl, string $environmentName): DataResponse {
         $this->settingsService->setSupportEmail($supportEmail);
         $this->settingsService->setSupportUrl($supportUrl);

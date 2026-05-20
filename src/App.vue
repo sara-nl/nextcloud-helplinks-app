@@ -11,16 +11,16 @@
                 />
                 
                 <NcEmptyContent
-                    v-else-if="sections.length === 0 && !introvoxEnabled && !supportEmail && !supportUrl && !cloudId"
+                    v-else-if="visibleSections.length === 0 && !introvoxEnabled && !supportEmail && !supportUrl && !cloudId"
                     :name="t('helplinks', 'No help sections available')"
                     :description="t('helplinks', 'Contact your administrator to configure help links.')"
                     icon="icon-info"
                 />
                 
-                <div v-else class="sections-container">
+                <div v-else ref="sectionsContainer" class="sections-container">
                     <!-- Introvox Interactive Tutorial Section -->
                     <div v-if="introvoxEnabled" class="help-section introvox-section">
-                        <h3>{{ t('helplinks', 'Interactive Tutorial by Introvox') }}</h3>
+                        <h3>{{ t('helplinks', 'Interactive Tutorial') }}</h3>
                         <p class="section-description">
                             {{ t('helplinks', 'IntroVox offers a user-friendly interactive onboarding tour that helps you get started quickly and easily find your way around the environment. You can find the IntroVox interactive onboarding tour in your personal settings.') }}
                         </p>
@@ -37,22 +37,22 @@
                     </div>
 
                     <!-- Regular Help Sections -->
-                    <div v-for="section in sections" :key="section.section.id" class="help-section">
+                    <div v-for="section in visibleSections" :key="section.section.id" class="help-section">
                         <h3>{{ section.section.title }}</h3>
                         <p v-if="section.section.description" class="section-description">
                             {{ section.section.description }}
                         </p>
-                        
+
                         <ul class="links-list">
                             <li v-if="section.section.mainLinkText && section.section.mainLinkUrl">
                                 <a :href="section.section.mainLinkUrl" target="_blank" rel="noopener noreferrer">
                                     {{ section.section.mainLinkText }} ↗
                                 </a>
                             </li>
-                            
-                            <li v-if="section.subLinks.length > 0">
+
+                            <li v-if="section.visibleSubLinks.length > 0">
                                 <ul class="sublinks-list">
-                                    <li v-for="subLink in section.subLinks" :key="subLink.id">
+                                    <li v-for="subLink in section.visibleSubLinks" :key="subLink.id">
                                         <a :href="subLink.url" target="_blank" rel="noopener noreferrer">
                                             {{ subLink.text }} ↗
                                         </a>
@@ -128,24 +128,25 @@
                             {{ cloudId }}
                         </p>
                             
-                        <!-- Expandable Address Book Tip -->
+                        <!-- Address Book Tip: opens in a popover so it floats
+                             above the page and never pushes other cards down. -->
                         <div class="address-book-expandable">
-                            <button 
-                                class="expand-button"
-                                @click="addressBookTipExpanded = !addressBookTipExpanded"
-                                :aria-expanded="addressBookTipExpanded.toString()"
-                            >
-                                <BookAccount :size="20" class="tip-icon" />
-                                <span class="expand-title">{{ t('helplinks', 'Pro Tip: Save to Address Book for Easy Sharing') }}</span>
-                                <ChevronDown 
-                                    :size="20" 
-                                    class="chevron-icon"
-                                    :class="{ 'rotated': addressBookTipExpanded }"
-                                />
-                            </button>
-                            
-                            <transition name="expand">
-                                <div v-show="addressBookTipExpanded" class="address-book-tip">
+                            <NcPopover :shown="addressBookTipExpanded" @update:shown="addressBookTipExpanded = $event">
+                                <template #trigger>
+                                    <button
+                                        class="expand-button"
+                                        :aria-expanded="addressBookTipExpanded.toString()"
+                                    >
+                                        <BookAccount :size="20" class="tip-icon" />
+                                        <span class="expand-title">{{ t('helplinks', 'Pro Tip: Save to Address Book for Easy Sharing') }}</span>
+                                        <ChevronDown
+                                            :size="20"
+                                            class="chevron-icon"
+                                            :class="{ 'rotated': addressBookTipExpanded }"
+                                        />
+                                    </button>
+                                </template>
+                                <div class="address-book-tip">
                                     <p>
                                         {{ t('helplinks', 'Save frequently used Federated Cloud IDs to your personal address book for quick access.') }}
                                         {{ t('helplinks', 'Next time you share a file or folder, simply start typing the contact\'s name and their Federated Cloud ID will appear in the autocomplete suggestions, making cross-instance sharing effortless!') }}
@@ -171,7 +172,7 @@
                                         {{ t('helplinks', 'Open Contacts App') }}
                                     </NcButton>
                                 </div>
-                            </transition>
+                            </NcPopover>
                         </div>
                     </div>
 
@@ -233,7 +234,7 @@
 </template>
 
 <script>
-import { NcContent, NcAppContent, NcEmptyContent, NcButton } from '@nextcloud/vue'
+import { NcContent, NcAppContent, NcEmptyContent, NcButton, NcPopover } from '@nextcloud/vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { showError } from '@nextcloud/dialogs'
@@ -253,6 +254,7 @@ export default {
         NcAppContent,
         NcEmptyContent,
         NcButton,
+        NcPopover,
         HelpCircle,
         Download,
         Key,
@@ -278,15 +280,40 @@ export default {
             loading: true,
         }
     },
+    computed: {
+        /**
+         * Sections shown to the user. A section is only rendered when its
+         * main link URL is set; sub-links with an empty URL are filtered out
+         * so empty link blocks are never shown.
+         */
+        visibleSections() {
+            return this.sections
+                .filter(section => section.section.mainLinkUrl)
+                .map(section => ({
+                    ...section,
+                    visibleSubLinks: (section.subLinks || []).filter(subLink => subLink.url),
+                }))
+        },
+    },
     async mounted() {
         await this.loadSections()
+        this._onResize = () => this.scheduleBalance()
+        window.addEventListener('resize', this._onResize)
+    },
+    beforeUnmount() {
+        if (this._onResize) {
+            window.removeEventListener('resize', this._onResize)
+        }
+        if (this._balanceRaf) {
+            cancelAnimationFrame(this._balanceRaf)
+        }
     },
     methods: {
         async loadSections() {
             try {
                 const response = await axios.get(generateUrl('/apps/helplinks/api/sections'))
                 this.sections = response.data.sections || []
-                
+
                 this.introvoxEnabled = response.data.introvoxEnabled || false
                 this.talkEnabled = response.data.talkEnabled || false
                 this.supportEmail = response.data.supportEmail || ''
@@ -300,7 +327,78 @@ export default {
                 this.sections = [] // Ensure it's an empty array on error
             } finally {
                 this.loading = false
+                this.scheduleBalance()
             }
+        },
+
+        /** Debounce column balancing to one run per animation frame. */
+        scheduleBalance() {
+            if (this._balanceRaf) {
+                cancelAnimationFrame(this._balanceRaf)
+            }
+            this._balanceRaf = requestAnimationFrame(() => {
+                this._balanceRaf = null
+                this.$nextTick(() => this.balanceColumns())
+            })
+        },
+
+        /**
+         * Set the flex container's max-height to roughly half the total card
+         * height so cards wrap into two balanced columns. Above the single
+         * card width (mobile) the cap is removed so everything stacks.
+         */
+        balanceColumns() {
+            const container = this.$refs.sectionsContainer
+            if (!container) {
+                return
+            }
+            const cards = [...container.querySelectorAll('.help-section')]
+            // Single column below the 768px breakpoint: let it flow naturally.
+            if (cards.length < 2 || window.innerWidth < 768) {
+                container.style.maxHeight = ''
+                return
+            }
+            const gap = 20
+            const heights = cards.map(c => c.offsetHeight)
+
+            // Find the smallest column height that still fits every card into
+            // exactly two columns. flex column-wrap fills column 1 until the
+            // next card would exceed max-height, then starts column 2; if the
+            // cap is too small a third column appears. We binary-search the
+            // smallest cap that keeps the simulated wrap at two columns, which
+            // both guarantees max two columns and balances them.
+            const columnsNeeded = (cap) => {
+                let columns = 1
+                let used = 0
+                for (const h of heights) {
+                    if (h > cap) {
+                        return Infinity // a single card taller than the cap
+                    }
+                    const add = used === 0 ? h : h + gap
+                    if (used + add > cap) {
+                        columns++
+                        used = h
+                    } else {
+                        used += add
+                    }
+                }
+                return columns
+            }
+
+            const tallest = Math.max(...heights)
+            const totalHeight = heights.reduce((sum, h) => sum + h + gap, 0)
+            let low = tallest
+            let high = totalHeight
+            // Smallest cap that fits in <= 2 columns.
+            while (low < high) {
+                const mid = Math.floor((low + high) / 2)
+                if (columnsNeeded(mid) <= 2) {
+                    high = mid
+                } else {
+                    low = mid + 1
+                }
+            }
+            container.style.maxHeight = `${low + gap}px`
         },
 
         async copyCloudId() {
@@ -340,16 +438,15 @@ export default {
 
 .sections-container {
     margin-top: 20px;
-    display: grid;
-    grid-template-columns: 1fr;
+    /* Balanced columns: cards flow top-to-bottom and wrap into a second column.
+       JS sets the container's max-height to ~half the total card height, so the
+       two columns end up roughly equal length, each card keeps its own height,
+       and there are no large gaps. Single column on narrow screens. */
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
     gap: 20px;
-}
-
-/* 2 columns on wide screens (tablets and up) */
-@media (min-width: 768px) {
-    .sections-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 .help-section {
@@ -357,7 +454,16 @@ export default {
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-large);
     padding: 20px;
-    height: fit-content;
+    /* One column by default: each card spans the full width. */
+    width: 100%;
+}
+
+/* Two balanced columns on wide screens (tablets and up). */
+@media (min-width: 768px) {
+    .help-section {
+        /* Half width minus half the 20px gap. */
+        width: calc(50% - 10px);
+    }
 }
 
 .support-section {
@@ -372,11 +478,6 @@ export default {
 .support-section a {
     color: var(--color-main-text);
     font-weight: 600;
-}
-
-.cloud-id-section {
-    background: var(--color-success-light);
-    border-color: var(--color-success);
 }
 
 .cloud-id-display {
@@ -404,7 +505,6 @@ export default {
 /* Address book */
 .address-book-expandable {
     margin: 20px 0;
-    overflow: hidden;
 }
 
 .expand-button {
@@ -452,11 +552,10 @@ export default {
 }
 
 .address-book-tip {
-    background: linear-gradient(135deg, var(--color-primary-element-light) 0%, var(--color-background-hover) 100%);
-    /*border: 2px solid var(--color-primary-element);*/
-    border-radius: var(--border-radius-large);
+    /* Rendered inside the floating popover panel; cap the width so the tip
+       reads as a column rather than stretching across the viewport. */
+    max-width: 420px;
     padding: 20px;
-    /*margin: 20px 0;*/
 }
 
 .address-book-tip > p {
@@ -507,18 +606,6 @@ export default {
 
 .contacts-button {
     margin-top: 15px;
-}
-
-/* Introvox */
-.introvox-section {
-    background: var(--color-primary-element-light);
-    border-color: var(--color-primary-element);
-}
-
-.nextcloud-section,
-.webdav-section {
-    background: var(--color-success-light);
-    border-color: var(--color-success);
 }
 
 .environment-url {

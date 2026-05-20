@@ -5,14 +5,14 @@
     <name>Help Links Manager</name>
     <summary>Manage hierarchical help links for your Nextcloud instance</summary>
     <description><![CDATA[Create and manage customizable help sections with main topics and sub-links accessible through the admin settings.]]></description>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <licence>agpl</licence>
     <author>Tom Wezepoel</author>
     <namespace>HelpLinks</namespace>
     <category>SURF</category>
     <bugs>https://github.com/sara-nl/nextcloud-helplinks-app/issues</bugs>
     <dependencies>
-        <nextcloud min-version="30" max-version="32"/>
+        <nextcloud min-version="30" max-version="34"/>
     </dependencies>
     <navigations>
         <navigation>

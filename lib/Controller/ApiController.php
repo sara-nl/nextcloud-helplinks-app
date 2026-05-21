@@ -5,6 +5,8 @@ use OCA\HelpLinks\AppInfo\Application;
 use OCA\HelpLinks\Service\SectionService;
 use OCA\HelpLinks\Service\SettingsService;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCSController;
 use OCP\IRequest;
@@ -25,12 +27,11 @@ class ApiController extends OCSController {
 
     /**
      * Get all sections
-     * 
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     * 
+     *
      * @return DataResponse
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function getSections(): DataResponse {
         try {
             $sections = $this->service->findAll();
@@ -46,13 +47,12 @@ class ApiController extends OCSController {
 
     /**
      * Get a single section
-     * 
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     * 
+     *
      * @param int $id
      * @return DataResponse
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function getSection(int $id): DataResponse {
         try {
             $sections = $this->service->findAll();
@@ -81,10 +81,7 @@ class ApiController extends OCSController {
 
     /**
      * Create a new section
-     * 
-     * @AdminRequired
-     * @NoCSRFRequired
-     * 
+     *
      * @param string $title
      * @param string $description
      * @param string $mainLinkText
@@ -93,6 +90,7 @@ class ApiController extends OCSController {
      * @param int $sortOrder
      * @return DataResponse
      */
+    #[NoCSRFRequired]
     public function createSection(
         string $title = '',
         string $description = '',
@@ -126,10 +124,7 @@ class ApiController extends OCSController {
 
     /**
      * Update an existing section
-     * 
-     * @AdminRequired
-     * @NoCSRFRequired
-     * 
+     *
      * @param int $id
      * @param string $title
      * @param string $description
@@ -138,6 +133,7 @@ class ApiController extends OCSController {
      * @param array $subLinks
      * @return DataResponse
      */
+    #[NoCSRFRequired]
     public function updateSection(
         int $id,
         string $title = '',
@@ -170,13 +166,11 @@ class ApiController extends OCSController {
 
     /**
      * Delete a section
-     * 
-     * @AdminRequired
-     * @NoCSRFRequired
-     * 
+     *
      * @param int $id
      * @return DataResponse
      */
+    #[NoCSRFRequired]
     public function deleteSection(int $id): DataResponse {
         try {
             $this->service->delete($id);
@@ -194,12 +188,11 @@ class ApiController extends OCSController {
 
     /**
      * Get settings
-     * 
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     * 
+     *
      * @return DataResponse
      */
+    #[NoAdminRequired]
+    #[NoCSRFRequired]
     public function getSettings(): DataResponse {
         try {
             $settings = $this->settingsService->getAll();
@@ -214,15 +207,13 @@ class ApiController extends OCSController {
 
     /**
      * Update settings
-     * 
-     * @AdminRequired
-     * @NoCSRFRequired
-     * 
+     *
      * @param string $supportEmail
      * @param string $supportUrl
      * @param string $environmentName
      * @return DataResponse
      */
+    #[NoCSRFRequired]
     public function updateSettings(
         string $supportEmail = '',
         string $supportUrl = '',

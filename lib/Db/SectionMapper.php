@@ -32,6 +32,6 @@ class SectionMapper extends QBMapper {
         $qb->update($this->getTableName())
             ->set('sort_order', $qb->createNamedParameter($sortOrder, IQueryBuilder::PARAM_INT))
             ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)));
-        $qb->execute();
+        $qb->executeStatement();
     }
 }

@@ -23,6 +23,6 @@ class SubLinkMapper extends QBMapper {
         $qb = $this->db->getQueryBuilder();
         $qb->delete($this->getTableName())
             ->where($qb->expr()->eq('section_id', $qb->createNamedParameter($sectionId, IQueryBuilder::PARAM_INT)));
-        $qb->execute();
+        $qb->executeStatement();
     }
 }

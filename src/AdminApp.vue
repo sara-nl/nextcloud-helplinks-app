@@ -152,6 +152,9 @@ export default {
   data() {
     return {
       sections: [],
+      // Ids of persisted sections removed in the UI; deleted on the server
+      // during saveAll. New (unsaved) sections are dropped without a call.
+      deletedIds: [],
       loading: true,
       saving: false,
       hasChanges: false
@@ -250,7 +253,12 @@ export default {
     deleteSection(id) {
       const index = this.sections.findIndex(s => s.id === id)
       if (index !== -1) {
-        this.sections.splice(index, 1)
+        const [removed] = this.sections.splice(index, 1)
+        // Only persisted sections need a server-side delete; unsaved ones
+        // (isNew) only ever lived in local state.
+        if (!removed.isNew) {
+          this.deletedIds.push(removed.id)
+        }
         this.markChanged()
       }
     },
@@ -283,6 +291,12 @@ export default {
     async saveAll() {
       this.saving = true
       try {
+        // Delete sections removed in the UI before persisting the rest.
+        for (const id of this.deletedIds) {
+          await axios.delete(generateUrl(`/apps/helplinks/api/sections/${id}`))
+        }
+        this.deletedIds = []
+
         for (const section of this.sections) {
           const data = {
             title: section.title,

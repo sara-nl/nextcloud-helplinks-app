@@ -17,27 +17,57 @@
                     icon="icon-info"
                 />
                 
-                <div v-else ref="sectionsContainer" class="sections-container">
-                    <!-- Introvox Interactive Tutorial Section -->
-                    <div v-if="introvoxEnabled" class="help-section introvox-section">
-                        <h3>{{ t('helplinks', 'Interactive Tutorial') }}</h3>
-                        <p class="section-description">
-                            {{ t('helplinks', 'IntroVox offers a user-friendly interactive onboarding tour that helps you get started quickly and easily find your way around the environment. You can find the IntroVox interactive onboarding tour in your personal settings.') }}
-                        </p>
-                        <NcButton
-                            type="primary"
-                            @click="openIntrovoxHelp"
-                            class="introvox-help-button"
-                        >
-                            <template #icon>
-                                <HelpCircle :size="20" />
-                            </template>
-                            {{ t('helplinks', 'Go to Introvox') }}
-                        </NcButton>
+                <div v-else class="sections-container">
+                    <!-- Top row: IntroVox tour beside the first help section.
+                         Without IntroVox there is no pairing; firstSection is
+                         null and every section flows in the list below. -->
+                    <div v-if="introvoxEnabled" :class="firstSection ? 'help-row' : ''">
+                        <div class="help-section introvox-section">
+                            <h3>{{ t('helplinks', 'Introduction tour') }}</h3>
+                            <p class="section-description">
+                                {{ t('helplinks', 'With the introduction tour, you can get started quickly and become familiar with the environment. You can find the tour in your personal settings.') }}
+                            </p>
+                            <NcButton
+                                type="primary"
+                                @click="openIntrovoxHelp"
+                                class="introvox-help-button"
+                            >
+                                <template #icon>
+                                    <HelpCircle :size="20" />
+                                </template>
+                                {{ t('helplinks', 'Go to the tour') }}
+                            </NcButton>
+                        </div>
+
+                        <!-- First help section, paired with IntroVox. -->
+                        <div v-if="firstSection" :key="firstSection.section.id" class="help-section">
+                            <h3>{{ firstSection.section.title }}</h3>
+                            <p v-if="firstSection.section.description" class="section-description">
+                                {{ firstSection.section.description }}
+                            </p>
+
+                            <ul class="links-list">
+                                <li v-if="firstSection.section.mainLinkText && firstSection.section.mainLinkUrl">
+                                    <a :href="firstSection.section.mainLinkUrl" target="_blank" rel="noopener noreferrer">
+                                        {{ firstSection.section.mainLinkText }} ↗
+                                    </a>
+                                </li>
+
+                                <li v-if="firstSection.visibleSubLinks.length > 0">
+                                    <ul class="sublinks-list">
+                                        <li v-for="subLink in firstSection.visibleSubLinks" :key="subLink.id">
+                                            <a :href="subLink.url" target="_blank" rel="noopener noreferrer">
+                                                {{ subLink.text }} ↗
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
-                    <!-- Regular Help Sections -->
-                    <div v-for="section in visibleSections" :key="section.section.id" class="help-section">
+                    <!-- Remaining help sections (all of them when IntroVox is off). -->
+                    <div v-for="section in remainingSections" :key="section.section.id" class="help-section">
                         <h3>{{ section.section.title }}</h3>
                         <p v-if="section.section.description" class="section-description">
                             {{ section.section.description }}
@@ -62,15 +92,17 @@
                         </ul>
                     </div>
 
+                    <!-- Talk + Files shown side by side (one pair). -->
+                    <div class="help-row">
                     <!-- Nextcloud Talk Desktop Client Section -->
                     <div v-if="talkEnabled" class="help-section nextcloud-section">
-                        <h3>{{ t('helplinks', 'Talk Desktop Client') }}</h3>
+                        <h3>{{ t('helplinks', 'Talk app') }}</h3>
                         <p class="section-description">
-                            {{ t('helplinks', 'Download and install the Nextcloud Talk desktop client to use video calls, chat, and screen sharing directly from your desktop.') }}
+                            {{ t('helplinks', 'Download and install Talk to make video calls and chat in the desktop app.') }}
                         </p>
                         <p class="section-description">
                             <strong>{{ t('helplinks', 'Configuration:') }}</strong><br>
-                            {{ t('helplinks', 'When setting up the client, use the following server URL:') }}
+                            {{ t('helplinks', 'When setting up the app, use the following address:') }}
                         </p>
                         <p class="environment-url">
                             {{ environmentUrl }}
@@ -85,19 +117,19 @@
                             <template #icon>
                                 <Download :size="20" />
                             </template>
-                            {{ t('helplinks', 'Download Nextcloud Talk Client') }}
+                            {{ t('helplinks', 'Download Talk') }}
                         </NcButton>
                     </div>
 
                     <!-- Nextcloud Files Desktop Client Section -->
                     <div class="help-section nextcloud-section">
-                        <h3>{{ t('helplinks', 'Files Desktop Client') }}</h3>
+                        <h3>{{ t('helplinks', 'Files app') }}</h3>
                         <p class="section-description">
-                            {{ t('helplinks', 'Download and install the Nextcloud Files desktop client to keep your files synchronized between the server and your desktop.') }}
+                            {{ t('helplinks', 'Download and install Files to sync your files with your computer via the desktop app, so you can work locally.') }}
                         </p>
                         <p class="section-description">
                             <strong>{{ t('helplinks', 'Configuration:') }}</strong><br>
-                            {{ t('helplinks', 'When setting up the client, use the following server URL:') }}
+                            {{ t('helplinks', 'When setting up the app, use the following address:') }}
                         </p>
                         <p class="environment-url">
                             {{ environmentUrl }}
@@ -112,16 +144,19 @@
                             <template #icon>
                                 <Download :size="20" />
                             </template>
-                            {{ t('helplinks', 'Download Nextcloud Files Client') }}
+                            {{ t('helplinks', 'Download Files') }}
                         </NcButton>
                     </div>
+                    </div>
 
+                    <!-- Cloud ID + WebDAV shown side by side (one pair). -->
+                    <div class="help-row">
                     <!-- Federated Cloud ID Section -->
                     <div v-if="cloudId" class="help-section cloud-id-section">
-                        <h3>{{ t('helplinks', 'Your Federated Cloud ID') }}</h3>
+                        <h3>{{ t('helplinks', 'Your Cloud ID') }}</h3>
                         <p class="section-description">
-                            {{ t('helplinks', 'Share your Federated Cloud ID with users on other Nextcloud servers to collaborate on files and folders.') }}
-                            {{ t('helplinks', 'Others can share files with you by entering your Federated Cloud ID.') }}
+                            {{ t('helplinks', 'With your Cloud ID, you can collaborate with users on other Nextcloud servers. Others can share files with you by entering this ID.') }}
+                            {{ t('helplinks', 'You can also use this ID in Talk to connect with users on other servers.') }}
                         </p>
 
                         <p class="environment-url">
@@ -138,7 +173,7 @@
                                         :aria-expanded="addressBookTipExpanded.toString()"
                                     >
                                         <BookAccount :size="20" class="tip-icon" />
-                                        <span class="expand-title">{{ t('helplinks', 'Pro Tip: Save to Address Book for Easy Sharing') }}</span>
+                                        <span class="expand-title">{{ t('helplinks', 'Pro tip: Save to your address book for faster sharing') }}</span>
                                         <ChevronDown
                                             :size="20"
                                             class="chevron-icon"
@@ -148,16 +183,16 @@
                                 </template>
                                 <div class="address-book-tip">
                                     <p>
-                                        {{ t('helplinks', 'Save frequently used Federated Cloud IDs to your personal address book for quick access.') }}
-                                        {{ t('helplinks', 'Next time you share a file or folder, simply start typing the contact\'s name and their Federated Cloud ID will appear in the autocomplete suggestions, making cross-instance sharing effortless!') }}
+                                        {{ t('helplinks', 'Save frequently used Cloud IDs in your address book for faster sharing.') }}
+                                        {{ t('helplinks', 'When you share a file or folder, simply start typing a contact\'s name. The corresponding Cloud ID will appear automatically in the suggestions.') }}
                                     </p>
                                     <div class="tip-steps">
-                                        <strong>{{ t('helplinks', 'How to add a federated contact:') }}</strong>
+                                        <strong>{{ t('helplinks', 'Add a contact:') }}</strong>
                                         <ol>
                                             <li>{{ t('helplinks', 'Open the Contacts app from the app menu') }}</li>
-                                            <li>{{ t('helplinks', 'Click the "+ New contact" button') }}</li>
-                                            <li>{{ t('helplinks', 'Enter the contact name and their Federated Cloud ID') }}</li>
-                                            <li>{{ t('helplinks', 'Add optional details like organization or notes') }}</li>
+                                            <li>{{ t('helplinks', 'Click + New contact') }}</li>
+                                            <li>{{ t('helplinks', 'Enter the contact\'s name and Cloud ID') }}</li>
+                                            <li>{{ t('helplinks', 'Optionally add extra details, such as organization or notes') }}</li>
                                             <li>{{ t('helplinks', 'Save the contact') }}</li>
                                         </ol>
                                     </div>
@@ -169,7 +204,7 @@
                                         <template #icon>
                                             <BookAccount :size="20" />
                                         </template>
-                                        {{ t('helplinks', 'Open Contacts App') }}
+                                        {{ t('helplinks', 'Open Contacts') }}
                                     </NcButton>
                                 </div>
                             </NcPopover>
@@ -178,12 +213,12 @@
 
                     <!-- WebDAV Section -->
                     <div class="help-section webdav-section">
-                        <h3>{{ t('helplinks', 'WebDAV File Access') }}</h3>
+                        <h3>{{ t('helplinks', 'WebDAV access') }}</h3>
                         <p class="section-description">
-                            {{ t('helplinks', 'You can access your files using any WebDAV client. This allows you to mount your cloud storage as a network drive on your computer or access it through compatible applications.') }}
+                            {{ t('helplinks', 'With WebDAV, you can access your files through other apps or as a network drive on your computer, without using the browser.') }}
                         </p>
                         <p class="section-description">
-                            <strong>{{ t('helplinks', 'Setup Instructions:') }}</strong>
+                            <strong>{{ t('helplinks', 'Setup:') }}</strong>
                         </p>
                         <ol class="setup-steps">
                             <li>{{ t('helplinks', 'Create WebDAV credentials in your personal settings') }}</li>
@@ -200,28 +235,27 @@
                             {{ t('helplinks', 'Create WebDAV Credentials') }}
                         </NcButton>
                     </div>
+                    </div>
 
                     <!-- IT Support Section -->
                     <div v-if="supportEmail || supportUrl" class="help-section support-section">
                         <h3>{{ t('helplinks', 'Support') }}</h3>
                         <p class="section-description">
-                            {{ t('helplinks', 'For further support, please contact your IT Service Desk.') }}
+                            {{ t('helplinks', 'Need help? Contact your IT Service Desk.') }}
                         </p>
 
                         <ul class="links-list">
                             <!-- Support via e-mail -->
                             <li v-if="supportEmail">
-                                {{ t('helplinks', 'Request support by email request from') }}
                                 <a :href="`mailto:${supportEmail}`">
-                                    <u>{{ t('helplinks', 'your IT-Servicedesk') }}</u> ↗
+                                    <u>{{ t('helplinks', 'Request support from your IT Service Desk') }}</u> ↗
                                 </a>
                             </li>
 
                             <!-- Support via URL -->
                             <li v-if="supportUrl">
-                                {{ t('helplinks', 'Request support by service request from') }}
                                 <a :href="supportUrl" target="_blank" rel="noopener">
-                                    <u>{{ t('helplinks', 'your IT-Servicedesk') }}</u> ↗
+                                    <u>{{ t('helplinks', 'Request support from your IT Service Desk') }}</u> ↗
                                 </a>
                             </li>
                         </ul>
@@ -294,19 +328,23 @@ export default {
                     visibleSubLinks: (section.subLinks || []).filter(subLink => subLink.url),
                 }))
         },
+
+        /**
+         * When the IntroVox card is shown it shares the top row with the first
+         * help section, so that section is rendered there and the rest follow
+         * below. Without IntroVox there is no pairing and every section flows
+         * in the normal list.
+         */
+        firstSection() {
+            return this.introvoxEnabled ? this.visibleSections[0] : null
+        },
+
+        remainingSections() {
+            return this.firstSection ? this.visibleSections.slice(1) : this.visibleSections
+        },
     },
     async mounted() {
         await this.loadSections()
-        this._onResize = () => this.scheduleBalance()
-        window.addEventListener('resize', this._onResize)
-    },
-    beforeUnmount() {
-        if (this._onResize) {
-            window.removeEventListener('resize', this._onResize)
-        }
-        if (this._balanceRaf) {
-            cancelAnimationFrame(this._balanceRaf)
-        }
     },
     methods: {
         async loadSections() {
@@ -327,78 +365,7 @@ export default {
                 this.sections = [] // Ensure it's an empty array on error
             } finally {
                 this.loading = false
-                this.scheduleBalance()
             }
-        },
-
-        /** Debounce column balancing to one run per animation frame. */
-        scheduleBalance() {
-            if (this._balanceRaf) {
-                cancelAnimationFrame(this._balanceRaf)
-            }
-            this._balanceRaf = requestAnimationFrame(() => {
-                this._balanceRaf = null
-                this.$nextTick(() => this.balanceColumns())
-            })
-        },
-
-        /**
-         * Set the flex container's max-height to roughly half the total card
-         * height so cards wrap into two balanced columns. Above the single
-         * card width (mobile) the cap is removed so everything stacks.
-         */
-        balanceColumns() {
-            const container = this.$refs.sectionsContainer
-            if (!container) {
-                return
-            }
-            const cards = [...container.querySelectorAll('.help-section')]
-            // Single column below the 768px breakpoint: let it flow naturally.
-            if (cards.length < 2 || window.innerWidth < 768) {
-                container.style.maxHeight = ''
-                return
-            }
-            const gap = 20
-            const heights = cards.map(c => c.offsetHeight)
-
-            // Find the smallest column height that still fits every card into
-            // exactly two columns. flex column-wrap fills column 1 until the
-            // next card would exceed max-height, then starts column 2; if the
-            // cap is too small a third column appears. We binary-search the
-            // smallest cap that keeps the simulated wrap at two columns, which
-            // both guarantees max two columns and balances them.
-            const columnsNeeded = (cap) => {
-                let columns = 1
-                let used = 0
-                for (const h of heights) {
-                    if (h > cap) {
-                        return Infinity // a single card taller than the cap
-                    }
-                    const add = used === 0 ? h : h + gap
-                    if (used + add > cap) {
-                        columns++
-                        used = h
-                    } else {
-                        used += add
-                    }
-                }
-                return columns
-            }
-
-            const tallest = Math.max(...heights)
-            const totalHeight = heights.reduce((sum, h) => sum + h + gap, 0)
-            let low = tallest
-            let high = totalHeight
-            // Smallest cap that fits in <= 2 columns.
-            while (low < high) {
-                const mid = Math.floor((low + high) / 2)
-                if (columnsNeeded(mid) <= 2) {
-                    high = mid
-                } else {
-                    low = mid + 1
-                }
-            }
-            container.style.maxHeight = `${low + gap}px`
         },
 
         async copyCloudId() {
@@ -438,14 +405,11 @@ export default {
 
 .sections-container {
     margin-top: 20px;
-    /* Balanced columns: cards flow top-to-bottom and wrap into a second column.
-       JS sets the container's max-height to ~half the total card height, so the
-       two columns end up roughly equal length, each card keeps its own height,
-       and there are no large gaps. Single column on narrow screens. */
+    /* Cards stack vertically. Paired cards (Talk+Files, Cloud ID+WebDAV) are
+       grouped in .help-row wrappers that lay them out two-up on wide screens
+       and stack them on narrow ones. Standalone cards span the full width. */
     display: flex;
     flex-direction: column;
-    flex-wrap: wrap;
-    align-content: flex-start;
     gap: 20px;
 }
 
@@ -454,15 +418,20 @@ export default {
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-large);
     padding: 20px;
-    /* One column by default: each card spans the full width. */
-    width: 100%;
 }
 
-/* Two balanced columns on wide screens (tablets and up). */
+/* A fixed pair of cards rendered side by side. The two cards keep equal
+   height and share the row evenly; on narrow screens they stack. */
+.help-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    align-items: stretch;
+}
+
 @media (min-width: 768px) {
-    .help-section {
-        /* Half width minus half the 20px gap. */
-        width: calc(50% - 10px);
+    .help-row {
+        grid-template-columns: 1fr 1fr;
     }
 }
 

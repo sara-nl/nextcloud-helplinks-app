@@ -156,7 +156,9 @@
                         <h3>{{ t('helplinks', 'Your Cloud ID') }}</h3>
                         <p class="section-description">
                             {{ t('helplinks', 'With your Cloud ID, you can collaborate with users on other Nextcloud servers. Others can share files with you by entering this ID.') }}
-                            {{ t('helplinks', 'You can also use this ID in Talk to connect with users on other servers.') }}
+                            <span v-if="talkEnabled">
+                                {{ t('helplinks', 'You can also use this ID in Talk to connect with users on other servers.') }}
+                            </span>
                         </p>
 
                         <p class="environment-url">

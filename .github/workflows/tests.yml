@@ -1,0 +1,58 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly run against the newest Nextcloud release and the development branch,
+    # to notice early when a new version breaks the app
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - run: composer lint
+
+  e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # master is the daily build of the next Nextcloud version (36)
+        nextcloud: ['34', '35', 'master']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: tests/e2e/run-docker.sh ${{ matrix.nextcloud }}
+
+  e2e-latest:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: tests/e2e/run-docker.sh latest
+        env:
+          # The newest release can be newer than max-version in info.xml
+          FORCE_ENABLE: '1'

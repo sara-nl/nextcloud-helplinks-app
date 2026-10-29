@@ -69,6 +69,7 @@ class SectionService {
             $section->setDescription($data['description'] ?? $section->getDescription());
             $section->setMainLinkText($data['mainLinkText'] ?? $section->getMainLinkText());
             $section->setMainLinkUrl($data['mainLinkUrl'] ?? $section->getMainLinkUrl());
+            $section->setSortOrder($data['sortOrder'] ?? $section->getSortOrder());
 
             $section = $this->sectionMapper->update($section);
 

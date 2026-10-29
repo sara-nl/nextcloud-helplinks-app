@@ -30,3 +30,24 @@ insert into oc_appconfig (appid,configkey,configvalue) VALUES ('helplinks','supp
 insert into oc_appconfig (appid,configkey,configvalue) VALUES ('helplinks','support_url','https://servicedesk.surf.nl');
 ```
 
+
+### Tests
+
+The end-to-end test starts the official Nextcloud Docker image, installs the app from this
+checkout and checks access for anonymous users, users and admins, the Help page with its
+navigation entry and script, the admin settings, and creating, changing, reordering and
+deleting sections and support settings through both the API of the frontend and the OCS API.
+Any error in the Nextcloud log fails the run.
+
+```bash
+npm ci && npm run build                          # the test installs the built frontend
+tests/e2e/run-docker.sh 35                       # image tag: 34, 35, latest, ...
+tests/e2e/run-docker.sh master                   # daily build of the next version (36)
+FORCE_ENABLE=1 tests/e2e/run-docker.sh latest    # a version newer than max-version
+```
+
+It needs Docker, curl and python3. `tests/e2e/e2e.sh` can also test an existing server over ssh;
+see the comment at the top of the script.
+
+GitHub Actions runs `composer lint` and the end-to-end test on Nextcloud 34, 35 and master for
+every pull request, and weekly against the newest Nextcloud release.

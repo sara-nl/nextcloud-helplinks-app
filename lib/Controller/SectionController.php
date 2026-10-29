@@ -66,13 +66,15 @@ class SectionController extends Controller {
     }
 
     public function update(int $id, string $title, string $description,
-                          string $mainLinkText, string $mainLinkUrl, array $subLinks): DataResponse {
+                          string $mainLinkText, string $mainLinkUrl, array $subLinks,
+                          ?int $sortOrder = null): DataResponse {
         $data = [
             'title' => $title,
             'description' => $description,
             'mainLinkText' => $mainLinkText,
             'mainLinkUrl' => $mainLinkUrl,
             'subLinks' => $subLinks,
+            'sortOrder' => $sortOrder,
         ];
         
         return new DataResponse($this->service->update($id, $data));

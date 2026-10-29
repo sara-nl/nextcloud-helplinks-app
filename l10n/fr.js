@@ -10,6 +10,8 @@ OC.L10N.register(
     "Introduction tour": "Visite d'introduction",
     "With the introduction tour, you can get started quickly and become familiar with the environment. You can find the tour in your personal settings.": "Grâce à la visite d'introduction, vous pouvez démarrer rapidement et vous familiariser avec l'environnement. Vous trouverez la visite dans vos paramètres personnels.",
     "Go to the tour": "Accéder à la visite",
+    "A tour shows you around step by step. Choose one to start it.": "Une visite vous guide pas à pas. Choisissez-en une pour la commencer.",
+    "Tour settings": "Paramètres des visites",
     "Talk app": "Application Talk",
     "Download and install Talk to make video calls and chat in the desktop app.": "Téléchargez et installez Talk pour passer des appels vidéo et discuter dans l'application de bureau.",
     "Download Talk": "Télécharger Talk",

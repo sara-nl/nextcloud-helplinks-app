@@ -24,19 +24,42 @@
                     <div v-if="introvoxEnabled" :class="firstSection ? 'help-row' : ''">
                         <div class="help-section introvox-section">
                             <h3>{{ t('helplinks', 'Introduction tour') }}</h3>
-                            <p class="section-description">
-                                {{ t('helplinks', 'With the introduction tour, you can get started quickly and become familiar with the environment. You can find the tour in your personal settings.') }}
-                            </p>
-                            <NcButton
-                                type="primary"
-                                @click="openIntrovoxHelp"
-                                class="introvox-help-button"
-                            >
-                                <template #icon>
-                                    <HelpCircle :size="20" />
-                                </template>
-                                {{ t('helplinks', 'Go to the tour') }}
-                            </NcButton>
+                            <!-- The tours this user may get: IntroVox's own element,
+                                 <introvox-tour-list> (PageController loads it), styled
+                                 here. Without tours the card is hidden; without the
+                                 element (older IntroVox, or it failed): the link to
+                                 the personal settings. -->
+                            <template v-if="introvoxTourList">
+                                <p class="section-description">
+                                    {{ t('helplinks', 'A tour shows you around step by step. Choose one to start it.') }}
+                                </p>
+                                <div ref="introvoxTours" class="introvox-tours" />
+                                <NcButton
+                                    type="secondary"
+                                    @click="openIntrovoxHelp"
+                                    class="introvox-help-button"
+                                >
+                                    <template #icon>
+                                        <HelpCircle :size="20" />
+                                    </template>
+                                    {{ t('helplinks', 'Tour settings') }}
+                                </NcButton>
+                            </template>
+                            <template v-else>
+                                <p class="section-description">
+                                    {{ t('helplinks', 'With the introduction tour, you can get started quickly and become familiar with the environment. You can find the tour in your personal settings.') }}
+                                </p>
+                                <NcButton
+                                    type="primary"
+                                    @click="openIntrovoxHelp"
+                                    class="introvox-help-button"
+                                >
+                                    <template #icon>
+                                        <HelpCircle :size="20" />
+                                    </template>
+                                    {{ t('helplinks', 'Go to the tour') }}
+                                </NcButton>
+                            </template>
                         </div>
 
                         <!-- First help section, paired with IntroVox. -->
@@ -316,6 +339,8 @@ export default {
 			appName: appName,
             sections: [],
             introvoxEnabled: false,
+            // IntroVox's tour list is on this page (PageController loads it)
+            introvoxTourList: !!document.querySelector('script[src*="/introvox/js/introvox-embed"]'),
             talkEnabled: false,
             supportEmail: '',
             supportUrl: '',
@@ -380,6 +405,29 @@ export default {
             } finally {
                 this.loading = false
             }
+            this.$nextTick(() => this.mountIntrovoxTours())
+        },
+
+        // IntroVox decides which tours this user may get (groups, apps, on
+        // or off); the element brings a link per tour, styled below. See
+        // "Embedding the tour list" in IntroVox's docs/architecture.
+        mountIntrovoxTours() {
+            const container = this.$refs.introvoxTours
+            if (!container || container.firstChild) {
+                return
+            }
+            const list = document.createElement('introvox-tour-list')
+            // No tours (switched off for everyone, or none for this user):
+            // there is nothing to start, so the card goes, like without IntroVox
+            list.addEventListener('introvox:loaded', (event) => {
+                if (!event.detail.welcome && event.detail.tours.length === 0) {
+                    this.introvoxEnabled = false
+                }
+            })
+            list.addEventListener('introvox:error', () => {
+                this.introvoxTourList = false
+            })
+            container.appendChild(list)
         },
 
         async copyCloudId() {
@@ -670,6 +718,137 @@ export default {
 
 .introvox-help-button {
     margin-top: 10px;
+}
+
+.introvox-tours {
+    margin-bottom: 10px;
+}
+
+/* IntroVox's <introvox-tour-list>: a link per tour, styled here. The
+   welcome tour is a wide bar on top, the other tours sit below it in rows
+   of three, with a check once seen and an arrow while not. */
+.introvox-tours :deep(.introvox-tour-list__items) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+@media (max-width: 1024px) {
+    .introvox-tours :deep(.introvox-tour-list__items) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .introvox-tours :deep(.introvox-tour-list__items) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.introvox-tours :deep(.introvox-tour-list__item) {
+    display: flex;
+}
+
+.introvox-tours :deep(.introvox-tour-list__item:has(.introvox-tour-list__link--welcome)) {
+    grid-column: 1 / -1;
+}
+
+.introvox-tours :deep(.introvox-tour-list__link) {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    box-sizing: border-box;
+    padding: 8px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-large);
+    background: var(--color-main-background);
+    color: var(--color-main-text);
+    font-weight: 600;
+    line-height: 1.3;
+    text-decoration: none;
+}
+
+.introvox-tours :deep(.introvox-tour-list__link:hover),
+.introvox-tours :deep(.introvox-tour-list__link:focus-visible) {
+    border-color: var(--color-primary-element);
+    background: var(--color-primary-light);
+}
+
+.introvox-tours :deep(.introvox-tour-list__name) {
+    flex-grow: 1;
+}
+
+/* The icon in a block of its own */
+.introvox-tours :deep(.introvox-tour-list__icon) {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background: var(--color-background-hover);
+}
+
+/* App icons in the apps menu are light, for the header: dark on a light page.
+   The inversion takes the block's background along, so that starts dark and
+   comes out as the light block of the other icons; a dark theme inverts
+   nothing and keeps a dark block. */
+.introvox-tours :deep(.introvox-tour-list__icon--app) {
+    padding: 8px;
+    background: #101010;
+    filter: var(--background-invert-if-bright);
+}
+
+/* An arrow while not seen, a check once seen */
+.introvox-tours :deep(.introvox-tour-list__link::after) {
+    content: '';
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    background: var(--color-primary-element);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18l6-6-6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.introvox-tours :deep(.introvox-tour-list__link--seen::after) {
+    background: var(--color-success-text, #2d7b41);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+}
+
+/* The welcome tour: a wide bar in the theme's colour, with a play mark */
+.introvox-tours :deep(.introvox-tour-list__link--welcome) {
+    gap: 16px;
+    min-height: 64px;
+    padding: 12px 20px;
+    border-color: var(--color-primary-element);
+    background: var(--color-primary-element);
+    color: var(--color-primary-element-text);
+    font-size: 17px;
+}
+
+.introvox-tours :deep(.introvox-tour-list__link--welcome:hover),
+.introvox-tours :deep(.introvox-tour-list__link--welcome:focus-visible) {
+    background: var(--color-primary-element-hover);
+    border-color: var(--color-primary-element-hover);
+}
+
+.introvox-tours :deep(.introvox-tour-list__link--welcome .introvox-tour-list__icon) {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-primary-element-text);
+    color: var(--color-primary-element);
+}
+
+.introvox-tours :deep(.introvox-tour-list__link--welcome::after) {
+    background: var(--color-primary-element-text);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 4l13 8-13 8z'/%3E%3C/svg%3E");
 }
 
 .links-list {

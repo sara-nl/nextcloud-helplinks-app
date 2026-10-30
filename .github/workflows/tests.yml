@@ -5,9 +5,9 @@ on:
   push:
     branches: [main]
   schedule:
-    # Weekly run against the newest Nextcloud release and the development branch,
+    # Monthly run against the newest Nextcloud release and the development branch,
     # to notice early when a new version breaks the app
-    - cron: '0 6 * * 1'
+    - cron: '0 6 1 * *'
   workflow_dispatch:
 
 permissions:

@@ -49,5 +49,10 @@ FORCE_ENABLE=1 tests/e2e/run-docker.sh latest    # a version newer than max-vers
 It needs Docker, curl and python3. `tests/e2e/e2e.sh` can also test an existing server over ssh;
 see the comment at the top of the script.
 
+`composer psalm` runs static analysis on `lib/`. IntroVox is an optional app and not part of
+`nextcloud/ocp`, so `tests/stubs/introvox.php` describes the IntroVox class this app uses; add a
+method there when the code starts using it.
+
 GitHub Actions runs `composer lint` and the end-to-end test on Nextcloud 34, 35 and master for
-every pull request, and weekly against the newest Nextcloud release.
+every pull request, and weekly against the newest Nextcloud release. Psalm runs against the
+`nextcloud/ocp` of the oldest and the newest Nextcloud that `info.xml` allows.

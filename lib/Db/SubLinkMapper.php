@@ -5,6 +5,9 @@ use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
+/**
+ * @template-extends QBMapper<SubLink>
+ */
 class SubLinkMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
         parent::__construct($db, 'helplinks_sublinks', SubLink::class);

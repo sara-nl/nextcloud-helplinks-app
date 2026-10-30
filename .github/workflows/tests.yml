@@ -5,9 +5,9 @@ on:
   push:
     branches: [main]
   schedule:
-    # Weekly run against the newest Nextcloud release and the development branch,
+    # Monthly run against the newest Nextcloud release and the development branch,
     # to notice early when a new version breaks the app
-    - cron: '0 6 * * 1'
+    - cron: '0 6 1 * *'
   workflow_dispatch:
 
 permissions:
@@ -23,6 +23,29 @@ jobs:
           php-version: '8.4'
           coverage: none
       - run: composer lint
+
+  psalm:
+    name: psalm (${{ matrix.bound }} Nextcloud version)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest and the newest Nextcloud that min-version and max-version in info.xml allow
+        bound: [min, max]
+    steps:
+      - uses: actions/checkout@v7
+      - id: versions
+        uses: nextcloud-libraries/nextcloud-version-matrix@v1.3.3
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - run: composer install --no-interaction --no-progress
+      - name: Install nextcloud/ocp of that version
+        env:
+          BRANCH: ${{ matrix.bound == 'min' && steps.versions.outputs.branches-min || steps.versions.outputs.branches-max }}
+        run: composer require --dev "nextcloud/ocp:dev-$BRANCH" --ignore-platform-reqs --with-dependencies --no-interaction --no-progress
+      - run: composer psalm -- --no-cache --no-progress --output-format=github
 
   e2e:
     runs-on: ubuntu-latest

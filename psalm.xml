@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="3"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config"
+    findUnusedCode="false"
+    findUnusedIssueHandlerSuppression="false"
+    phpVersion="8.1"
+>
+    <projectFiles>
+        <directory name="lib" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+    <extraFiles>
+        <directory name="vendor" />
+    </extraFiles>
+    <stubs>
+        <file name="tests/stubs/introvox.php" />
+    </stubs>
+    <issueHandlers>
+        <!-- #[\Override] only exists since PHP 8.3, and Nextcloud 30 still runs on PHP 8.1 -->
+        <MissingOverrideAttribute errorLevel="suppress" />
+        <!-- Doctrine is part of the server, not of nextcloud/ocp. Since Nextcloud 35 nextcloud/ocp no
+             longer refers to it here, hence findUnusedIssueHandlerSuppression="false" above. -->
+        <UndefinedDocblockClass>
+            <errorLevel type="suppress">
+                <referencedClass name="Doctrine\DBAL\Schema\Table" />
+            </errorLevel>
+        </UndefinedDocblockClass>
+    </issueHandlers>
+</psalm>
